@@ -1,0 +1,417 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  user_id            Int      @id @default(autoincrement())
+  full_name          String   @db.VarChar(100)
+  email              String   @unique @db.VarChar(150)
+  password           String   @db.VarChar(255)
+  role               String   @default("Outlet Manager") @db.VarChar(50)
+  phone              String?  @db.VarChar(20)
+  assigned_outlet_id Int?
+  is_active          Boolean? @default(true)
+  profile_image      String?  @db.Text
+  created_at         DateTime @default(now())
+  updated_at         DateTime @default(now()) @updatedAt
+
+  assigned_outlet Outlet? @relation(fields: [assigned_outlet_id], references: [outlet_id])
+  notifications   Notification[]
+  action_plans    ActionPlan[]
+
+  @@map("users")
+}
+
+model Outlet {
+  outlet_id    Int       @id @default(autoincrement())
+  outlet_name  String?   @db.VarChar(150)
+  owner_name   String?   @db.VarChar(100)
+  manager_name String?   @db.VarChar(100)
+  phone        String?   @db.VarChar(20)
+  email        String?   @db.VarChar(100)
+  address      String?   @db.Text
+  city         String?   @db.VarChar(50)
+  state        String?   @db.VarChar(50)
+  region       String?   @db.VarChar(20)
+  franchise_id Int?
+  health       Int       @default(80)
+  revenue      Decimal   @default(0) @db.Decimal(12, 2)
+  profit       Decimal   @default(0) @db.Decimal(12, 2)
+  orders       Int       @default(0)
+  growth       Decimal   @default(0) @db.Decimal(5, 2)
+  rating       Decimal   @default(4.0) @db.Decimal(3, 2)
+  status       String    @default("Healthy") @db.VarChar(20)
+  opening_date DateTime? @db.Date
+
+  users           User[]
+  staff           Staff[]
+  inventory       Inventory[]
+  purchase_orders PurchaseOrder[]
+  audits          Audit[]
+  audit_evidence  AuditEvidence[]
+  swift_leaves    SwiftLeave[]
+  expenses        Expense[]
+  sales           Sales[]
+  notifications   Notification[]
+  action_plans    ActionPlan[]
+
+  @@map("outlets")
+}
+
+model Product {
+  product_id   Int     @id @default(autoincrement())
+  product_name String  @db.VarChar(100)
+  sku          String  @unique @db.VarChar(50)
+  category     String  @db.VarChar(50)
+  price        Decimal @db.Decimal(10, 2)
+  cost_price   Decimal @db.Decimal(10, 2)
+  unit         String  @default("units") @db.VarChar(20)
+  status       String  @default("Available") @db.VarChar(20)
+
+  inventory            Inventory[]
+  purchase_order_items PurchaseOrderItem[]
+
+  @@map("products")
+}
+
+model Inventory {
+  inventory_id  Int      @id @default(autoincrement())
+  outlet_id     Int?
+  product_id    Int?
+  product_name  String?  @db.VarChar(100)
+  category      String?  @db.VarChar(50)
+  quantity      Int?
+  unit_price    Decimal? @db.Decimal(10, 2)
+  current_stock Int?     @default(0)
+  reorder_level Int?     @default(20)
+  supplier_name String?  @db.VarChar(100)
+  batch_no      String?  @db.VarChar(50)
+  expiry_date   DateTime? @db.Date
+  status        String?  @default("Healthy") @db.VarChar(30)
+  last_updated  DateTime? @default(now())
+
+  outlet  Outlet?  @relation(fields: [outlet_id], references: [outlet_id])
+  product Product? @relation(fields: [product_id], references: [product_id])
+
+  @@map("inventory")
+}
+
+model PurchaseOrder {
+  purchase_order_id Int      @id @default(autoincrement())
+  po_number         String   @unique @db.VarChar(50)
+  supplier_name     String   @db.VarChar(100)
+  outlet_id         Int
+  order_date        DateTime @default(now()) @db.Date
+  delivery_date     DateTime @db.Date
+  status            String   @default("Pending") @db.VarChar(30)
+  total_amount      Decimal  @db.Decimal(10, 2)
+
+  outlet Outlet              @relation(fields: [outlet_id], references: [outlet_id])
+  items  PurchaseOrderItem[]
+
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  purchase_order_item_id Int     @id @default(autoincrement())
+  purchase_order_id      Int
+  product_id             Int
+  quantity               Int
+  unit_price             Decimal @db.Decimal(10, 2)
+
+  purchase_order PurchaseOrder @relation(fields: [purchase_order_id], references: [purchase_order_id])
+  product        Product       @relation(fields: [product_id], references: [product_id])
+
+  @@map("purchase_order_items")
+}
+
+model AuditEvidence {
+  evidence_id   Int      @id @default(autoincrement())
+  evidence_code String   @unique @db.VarChar(50)
+  name          String   @db.VarChar(150)
+  type          String   @db.VarChar(50)
+  outlet_id     Int
+  status        String   @default("Needs Review") @db.VarChar(30)
+  ai_score      Int      @default(70)
+  upload_date   DateTime @default(now()) @db.Date
+  details       String?  @db.Text
+  file_url      String?  @db.Text
+  file_size     String?  @db.VarChar(20)
+  created_at    DateTime @default(now())
+
+  outlet Outlet @relation(fields: [outlet_id], references: [outlet_id])
+
+  @@map("audit_evidence")
+}
+
+model Audit {
+  audit_id     Int       @id @default(autoincrement())
+  outlet_id    Int?
+  audit_date   DateTime? @db.Date
+  audit_type   String?   @db.VarChar(50)
+  auditor_name String?   @db.VarChar(100)
+  score        Int?
+  remarks      String?   @db.Text
+
+  outlet Outlet? @relation(fields: [outlet_id], references: [outlet_id])
+
+  @@map("audits")
+}
+
+model Staff {
+  staff_id       Int       @id @default(autoincrement())
+  outlet_id      Int?
+  staff_name     String?   @db.VarChar(100)
+  first_name     String?   @db.VarChar(50)
+  last_name      String?   @db.VarChar(50)
+  role           String?   @db.VarChar(50)
+  shift          String?   @default("Morning (07:00-15:00)") @db.VarChar(50)
+  salary         Decimal?  @db.Decimal(10, 2)
+  phone          String?   @db.VarChar(20)
+  email          String?   @db.VarChar(100)
+  joining_date   DateTime? @db.Date
+  rating         Decimal?  @default(4.5) @db.Decimal(3, 2)
+  sales_per_hour Decimal?  @default(0) @db.Decimal(10, 2)
+  attendance     Int?      @default(95)
+  leaves_taken   Int?      @default(0)
+  status         String?   @default("On Shift") @db.VarChar(20)
+
+  outlet       Outlet?      @relation(fields: [outlet_id], references: [outlet_id])
+  swift_leaves SwiftLeave[]
+
+  @@map("staff")
+}
+
+model SwiftLeave {
+  leave_id              Int      @id @default(autoincrement())
+  leave_code            String   @unique @db.VarChar(50)
+  applicant_id          Int
+  outlet_id             Int
+  leave_type            String   @db.VarChar(50)
+  start_date            DateTime @db.Date
+  end_date              DateTime @db.Date
+  total_days            Int      @default(1)
+  reason                String   @db.Text
+  status                String   @default("Pending AI Approval") @db.VarChar(50)
+  priority              String   @default("Normal") @db.VarChar(20)
+  ai_conflict           String?  @db.Text
+  replacement_suggested String?  @db.VarChar(100)
+  created_at            DateTime @default(now())
+
+  applicant Staff  @relation(fields: [applicant_id], references: [staff_id])
+  outlet    Outlet @relation(fields: [outlet_id], references: [outlet_id])
+
+  @@map("swift_leaves")
+}
+
+model MarketingCampaign {
+  campaign_id    Int       @id @default(autoincrement())
+  campaign_name  String?   @db.VarChar(100)
+  outlet_id      Int?
+  campaign_type  String?   @db.VarChar(50)
+  platform       String?   @default("Google Ads") @db.VarChar(50)
+  start_date     DateTime? @db.Date
+  end_date       DateTime? @db.Date
+  budget         Decimal?  @db.Decimal(10, 2)
+  spent          Decimal?  @default(0) @db.Decimal(10, 2)
+  impressions    Int?      @default(0)
+  clicks         Int?      @default(0)
+  conversions    Int?      @default(0)
+  expected_reach Int?
+  roas           Decimal?  @default(0.0) @db.Decimal(5, 2)
+  status         String?   @default("Active") @db.VarChar(30)
+
+  @@map("marketing_campaigns")
+}
+
+model Promotion {
+  promotion_id Int       @id @default(autoincrement())
+  promo_code   String    @unique @db.VarChar(50)
+  title        String    @db.VarChar(100)
+  discount_pct Decimal   @db.Decimal(5, 2)
+  start_date   DateTime? @db.Date
+  end_date     DateTime? @db.Date
+  status       String    @default("Active") @db.VarChar(20)
+  usage_count  Int       @default(0)
+
+  @@map("promotions")
+}
+
+model Sales {
+  sale_id      Int       @id @default(autoincrement())
+  outlet_id    Int?
+  sale_date    DateTime? @default(now())
+  total_amount Decimal?  @db.Decimal(10, 2)
+  customers    Int?
+  expenses     Decimal?  @db.Decimal(10, 2)
+  orders       Int?
+  profit       Decimal?  @db.Decimal(10, 2)
+  revenue      Decimal?  @db.Decimal(10, 2)
+
+  outlet Outlet? @relation(fields: [outlet_id], references: [outlet_id])
+
+  @@map("sales")
+}
+
+model Expense {
+  expense_id   Int      @id @default(autoincrement())
+  outlet_id    Int
+  expense_type String   @db.VarChar(100)
+  amount       Decimal  @db.Decimal(10, 2)
+  expense_date DateTime @db.Date
+  description  String?  @db.Text
+
+  outlet Outlet @relation(fields: [outlet_id], references: [outlet_id])
+
+  @@map("expenses")
+}
+
+model retail_sales {
+  bill_id          Int       @id
+  customer_name    String?   @db.VarChar(100)
+  city             String?   @db.VarChar(100)
+  product_category String?   @db.VarChar(100)
+  quantity         Int?
+  total_amount     Decimal?  @db.Decimal(10, 2)
+  payment_method   String?   @db.VarChar(30)
+  store_type       String?   @db.VarChar(50)
+  visit_date       DateTime? @db.Date
+
+  @@map("retail_sales")
+}
+
+model franchises {
+  franchise_id      Int       @id @default(autoincrement())
+  franchise_name    String?   @db.VarChar(100)
+  owner_name        String?   @db.VarChar(100)
+  contact_email     String?   @db.VarChar(100)
+  contact_phone     String?   @db.VarChar(20)
+  headquarters      String?   @db.VarChar(100)
+  registration_date DateTime? @db.Date
+  status            String?   @db.VarChar(20)
+
+  @@map("franchises")
+}
+
+model alerts {
+  notification_id   Int       @id @default(autoincrement())
+  outlet_id         Int?
+  alert_id          Int?
+  alert_type        String?   @db.VarChar(50)
+  alert_date        DateTime? @db.Date
+  priority          String?   @db.VarChar(20)
+  message           String?   @db.Text
+  notification_type String?   @db.VarChar(50)
+  created_at        DateTime? @default(now()) @db.Timestamp(6)
+  status            String?   @db.VarChar(20)
+
+  @@map("alerts")
+}
+
+model Notification {
+  id               Int      @id @default(autoincrement())
+  title            String   @db.VarChar(200)
+  message          String   @db.Text
+  event_type       String   @default("GENERAL") @db.VarChar(50)
+  priority         String   @default("MEDIUM") @db.VarChar(20)
+  channel          String   @default("IN_APP") @db.VarChar(20)
+  outlet_id        Int?
+  outlet_name      String?  @db.VarChar(150)
+  recipient_id     Int?
+  recipient_role   String?  @db.VarChar(50)
+  status           String   @default("NEW") @db.VarChar(30)
+  acknowledged     Boolean  @default(false)
+  acknowledged_at  DateTime?
+  due_at           DateTime?
+  resolved_at      DateTime?
+  escalated_at     DateTime?
+  escalation_level Int      @default(0)
+  metadata         String?  @db.Text
+  created_at       DateTime @default(now())
+  updated_at       DateTime @default(now()) @updatedAt
+
+  outlet       Outlet?                  @relation(fields: [outlet_id], references: [outlet_id])
+  recipient    User?                    @relation(fields: [recipient_id], references: [user_id])
+  action_plans ActionPlan[]
+  escalations  NotificationEscalation[]
+
+  @@map("notifications")
+}
+
+model NotificationEscalation {
+  id               Int      @id @default(autoincrement())
+  notification_id  Int
+  escalation_level Int      @default(1)
+  previous_owner   String?  @db.VarChar(100)
+  escalated_to     String?  @db.VarChar(100)
+  reason           String   @db.Text
+  status           String   @default("ESCALATED") @db.VarChar(30)
+  timestamp        DateTime @default(now())
+
+  notification Notification @relation(fields: [notification_id], references: [id], onDelete: Cascade)
+
+  @@map("notification_escalations")
+}
+
+model ActionPlan {
+  id                     Int       @id @default(autoincrement())
+  title                  String    @db.VarChar(200)
+  description            String    @db.Text
+  source_notification_id Int?
+  outlet_id              Int?
+  outlet_name            String?   @db.VarChar(150)
+  priority               String    @default("MEDIUM") @db.VarChar(20)
+  owner_id               Int?
+  owner_name             String?   @db.VarChar(100)
+  status                 String    @default("OPEN") @db.VarChar(30)
+  progress               Int       @default(0)
+  due_date               DateTime?
+  created_at             DateTime  @default(now())
+  completed_at           DateTime?
+  verified_at            DateTime?
+
+  source_notification Notification?    @relation(fields: [source_notification_id], references: [id])
+  outlet              Outlet?          @relation(fields: [outlet_id], references: [outlet_id])
+  owner               User?            @relation(fields: [owner_id], references: [user_id])
+  tasks               ActionPlanTask[]
+
+  @@map("action_plans")
+}
+
+model ActionPlanTask {
+  id             Int       @id @default(autoincrement())
+  action_plan_id Int
+  title          String    @db.VarChar(200)
+  description    String?   @db.Text
+  assigned_to    String?   @db.VarChar(100)
+  due_date       DateTime?
+  status         String    @default("PENDING") @db.VarChar(30)
+  comments       String?   @db.Text
+  created_at     DateTime  @default(now())
+  completed_at   DateTime?
+
+  action_plan ActionPlan @relation(fields: [action_plan_id], references: [id], onDelete: Cascade)
+
+  @@map("action_plan_tasks")
+}
+
+model NotificationAudit {
+  id              Int      @id @default(autoincrement())
+  notification_id Int?
+  action_plan_id  Int?
+  event           String   @db.VarChar(100)
+  actor           String   @db.VarChar(100)
+  details         String   @db.Text
+  timestamp       DateTime @default(now())
+
+  @@map("notification_audits")
+}
+
+
+
+
+

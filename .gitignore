@@ -1,0 +1,24 @@
+# Environment variables and secrets
+.env
+.env.*
+backend/.env
+
+# Dependencies
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+
+# Build output
+dist/
+build/
+frontend/dist/
+
+# Duplicate snapshot
+Agentic-AI-for-Franchise-Management-System-with-Performance-Monitoring-AI/
+
+# Editors and logs
+.vscode/
+.idea/
+*.log
+.DS_Store
+Thumbs.db

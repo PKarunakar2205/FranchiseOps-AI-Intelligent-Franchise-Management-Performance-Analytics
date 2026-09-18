@@ -8,12 +8,6 @@ The system provides a centralized dashboard for managing outlet performance, fra
 
 ---
 
-## 🌐 Live Demo
-
-🚀 **Live Application:**  
-https://agentic-ai-for-franchise-management-jd3n.onrender.com
-
----
 
 ## ✨ Features
 

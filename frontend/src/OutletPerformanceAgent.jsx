@@ -23,6 +23,9 @@ import {
 } from "lucide-react";
 import AuditRiskEvidenceCenter from "./components/audit/AuditRiskEvidenceCenter";
 import { apiFetch, getFranchiseIntelligence, getDashboardSummary } from "./api/apiClient";
+import OutletLocationMap from "./components/command/OutletLocationMap";
+import OutletDrillDownModal from "./components/command/OutletDrillDownModal";
+
 
 /* ------------------------------------------------------------------ */
 /* DUMMY DATA                                                          */
@@ -350,6 +353,8 @@ export default function OutletPerformanceAgent({ embedded = false, dark: propDar
   const [page, setPage] = useState(1);
   const [forecastRange, setForecastRange] = useState("30D");
   const [hoveredMarker, setHoveredMarker] = useState(null);
+  const [selectedOutletDrillDown, setSelectedOutletDrillDown] = useState(null);
+
   const navigate = useNavigate();
   const location = useLocation();
   const isDashboardRoute = location.pathname === "/" || location.pathname === "";
@@ -360,15 +365,17 @@ export default function OutletPerformanceAgent({ embedded = false, dark: propDar
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [realBackendOutlets, setRealBackendOutlets] = useState([]);
   const pageSize = 5;
 
   const fetchTelemetry = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [dashRes, intelRes] = await Promise.all([
+      const [dashRes, intelRes, outletsRes] = await Promise.all([
         getDashboardSummary().catch(() => null),
         getFranchiseIntelligence().catch(() => null),
+        apiFetch("/outlets").catch(() => null),
       ]);
       if (dashRes && dashRes.success && dashRes.data) {
         setDashSummary(dashRes.data);
@@ -380,6 +387,9 @@ export default function OutletPerformanceAgent({ embedded = false, dark: propDar
       }
       if (intelRes && intelRes.success && intelRes.data) {
         setIntelData(intelRes.data);
+      }
+      if (outletsRes && outletsRes.success && Array.isArray(outletsRes.data) && outletsRes.data.length > 0) {
+        setRealBackendOutlets(outletsRes.data);
       }
       setLastUpdated(new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
     } catch (err) {
@@ -1877,43 +1887,13 @@ export default function OutletPerformanceAgent({ embedded = false, dark: propDar
               </div>
             </GlassCard>
 
-            {/* ============ SECTION 9: LOCATION MAP ============ */}
-            <GlassCard className="p-5">
-              <h2 className="font-semibold text-slate-900 dark:text-white mb-1">Franchise Location Map</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Relative outlet positions across India, colored by health status</p>
-              <div className="relative w-full h-[380px] rounded-xl bg-gradient-to-br from-blue-50 to-purple-50/60 dark:from-slate-800/40 dark:to-slate-900 border border-slate-100 dark:border-slate-800 overflow-hidden">
-                <div className="absolute inset-0 opacity-[0.15] dark:opacity-[0.08]" style={{ backgroundImage: "radial-gradient(circle, #3b82f6 1px, transparent 1px)", backgroundSize: "22px 22px" }} />
-                {outlets.map(o => {
-                  const pos = cityCoords[o.city] || { x: 50, y: 50 };
-                  const color = o.status === "Healthy" ? "#10b981" : o.status === "Average" ? "#f59e0b" : "#f43f5e";
-                  return (
-                    <div key={o.id} className="absolute" style={{ left: `${pos.x}%`, top: `${pos.y}%`, transform: "translate(-50%, -50%)" }}
-                      onMouseEnter={() => setHoveredMarker(o.id)} onMouseLeave={() => setHoveredMarker(null)}>
-                      <motion.div
-                        className="w-4 h-4 rounded-full border-2 border-white dark:border-slate-900 shadow-lg cursor-pointer"
-                        style={{ background: color }}
-                        animate={{ scale: hoveredMarker === o.id ? 1.4 : [1, 1.15, 1] }}
-                        transition={{ duration: hoveredMarker === o.id ? 0.2 : 2, repeat: hoveredMarker === o.id ? 0 : Infinity }}
-                      />
-                      {hoveredMarker === o.id && (
-                        <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-                          className="absolute left-1/2 -translate-x-1/2 -top-[70px] w-44 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-xl p-2.5 z-10 text-left">
-                          <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">{o.name}</p>
-                          <p className="text-[11px] text-slate-400 mb-1">{o.city}</p>
-                          <div className="flex justify-between text-[11px]"><span className="text-slate-500">Revenue</span><span className="font-medium">{compactCurrency(o.revenue)}</span></div>
-                          <div className="flex justify-between text-[11px]"><span className="text-slate-500">Health</span><span className="font-medium" style={{ color }}>{o.health}/100</span></div>
-                        </motion.div>
-                      )}
-                    </div>
-                  );
-                })}
-                <div className="absolute bottom-3 left-3 flex gap-3 text-[11px] bg-white/80 dark:bg-slate-900/80 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-100 dark:border-slate-800">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Healthy</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-500" /> Average</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-rose-500" /> Critical</span>
-                </div>
-              </div>
-            </GlassCard>
+            {/* ============ SECTION 9: REAL GEOGRAPHIC LOCATION MAP ============ */}
+            <OutletLocationMap
+              outlets={realBackendOutlets.length > 0 ? realBackendOutlets : (dashSummary?.outletPerformance?.leaderboard || outlets)}
+              salesByCity={dashSummary?.salesAnalytics?.salesByCity || []}
+              onSelectOutlet={(outlet) => setSelectedOutletDrillDown(outlet)}
+            />
+
 
             {/* ============ REGIONAL COMPARISON ============ */}
             <GlassCard className="p-5">
@@ -2225,8 +2205,17 @@ export default function OutletPerformanceAgent({ embedded = false, dark: propDar
               </GlassCard>
             </div>
 
+            {/* ============ OUTLET DRILL DOWN MODAL ============ */}
+            {selectedOutletDrillDown && (
+              <OutletDrillDownModal
+                outlet={selectedOutletDrillDown}
+                onClose={() => setSelectedOutletDrillDown(null)}
+              />
+            )}
+
             {/* ============ FOOTER ============ */}
             <footer className="flex flex-col sm:flex-row items-center justify-between gap-3 py-6 text-xs text-slate-400 border-t border-slate-200 dark:border-slate-800">
+
               <span>Last updated {now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })} · Dashboard v2.4.1</span>
               <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-500/10 dark:to-purple-500/10 border border-blue-100 dark:border-blue-500/20 text-blue-600 dark:text-blue-400 font-medium">
                 <Sparkles size={11} /> AI Powered

@@ -1,6 +1,9 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch } from "../../api/apiClient";
+import OutletLocationMap from "../command/OutletLocationMap";
+import OutletDrillDownModal from "../command/OutletDrillDownModal";
+
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell, PieChart as RPieChart, Pie
@@ -508,6 +511,7 @@ export default function AuditRiskEvidenceCenter() {
   }, []);
 
   const [selectedEvidence, setSelectedEvidence] = useState(null);
+  const [selectedOutletDrillDown, setSelectedOutletDrillDown] = useState(null);
 
   /* State for Root-Cause Analysis Modal */
   const [selectedRootCause, setSelectedRootCause] = useState(failedAuditItems[0]);
@@ -1423,6 +1427,21 @@ export default function AuditRiskEvidenceCenter() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* AUDIT RISK MAP (REAL GEOGRAPHIC LOCATION MAP) */}
+      <div className="pt-4">
+        <OutletLocationMap
+          onSelectOutlet={(outlet) => setSelectedOutletDrillDown(outlet)}
+        />
+      </div>
+
+      {/* OUTLET DRILL DOWN MODAL */}
+      {selectedOutletDrillDown && (
+        <OutletDrillDownModal
+          outlet={selectedOutletDrillDown}
+          onClose={() => setSelectedOutletDrillDown(null)}
+        />
+      )}
     </div>
   );
 }

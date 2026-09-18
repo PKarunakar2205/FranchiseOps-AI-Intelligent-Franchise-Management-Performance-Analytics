@@ -1,6 +1,9 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch } from "../api/apiClient";
+import OutletLocationMap from "../components/command/OutletLocationMap";
+import OutletDrillDownModal from "../components/command/OutletDrillDownModal";
+
 import {
   LineChart, Line, BarChart, Bar, PieChart as RPieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
@@ -103,6 +106,8 @@ const aiWorkforceInsights = [
 export default function StaffAgent() {
   const [activeSection, setActiveSection] = useState("overview");
   const [staffList, setStaffList] = useState(initialStaff);
+  const [selectedOutletDrillDown, setSelectedOutletDrillDown] = useState(null);
+
   const [swiftLeaves, setSwiftLeaves] = useState(initialSwiftLeaves);
 
   useEffect(() => {
@@ -952,7 +957,22 @@ export default function StaffAgent() {
           </div>
         )}
       </AnimatePresence>
+      {/* WORKFORCE LOCATION MAP SECTION */}
+      <div className="pt-4">
+        <OutletLocationMap
+          onSelectOutlet={(outlet) => setSelectedOutletDrillDown(outlet)}
+        />
+      </div>
+
+      {/* OUTLET DRILL DOWN MODAL */}
+      {selectedOutletDrillDown && (
+        <OutletDrillDownModal
+          outlet={selectedOutletDrillDown}
+          onClose={() => setSelectedOutletDrillDown(null)}
+        />
+      )}
 
     </div>
   );
 }
+

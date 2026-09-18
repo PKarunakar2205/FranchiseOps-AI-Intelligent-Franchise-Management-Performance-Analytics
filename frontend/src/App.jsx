@@ -40,11 +40,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* AUTH ROUTES (FULL SCREEN) */}
+        {/* AUTH ROUTES */}
         <Route path="/login" element={<LoginPage dark={dark} setDark={setDark} />} />
         <Route path="/signup" element={<SignUpPage dark={dark} setDark={setDark} />} />
 
-        {/* AGENT ROUTES (WRAPPED IN SHARED LAYOUT) */}
+        {/* COMMAND CENTER DASHBOARD ROUTES */}
         <Route
           path="/"
           element={
@@ -71,6 +71,14 @@ function App() {
         />
         <Route
           path="/outlet-performance"
+          element={
+            <Layout dark={dark} setDark={setDark}>
+              <OutletPerformanceAgent embedded={true} dark={dark} setDark={setDark} />
+            </Layout>
+          }
+        />
+        <Route
+          path="/outlets"
           element={
             <Layout dark={dark} setDark={setDark}>
               <OutletPerformanceAgent embedded={true} dark={dark} setDark={setDark} />
@@ -146,7 +154,7 @@ function App() {
           }
         />
 
-        {/* CATCH ALL 404 FALLBACK */}
+        {/* 404 FALLBACK */}
         <Route
           path="*"
           element={

@@ -1,6 +1,9 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { apiFetch } from "../api/apiClient";
+import OutletLocationMap from "../components/command/OutletLocationMap";
+import OutletDrillDownModal from "../components/command/OutletDrillDownModal";
+
 import {
   LineChart, Line, BarChart, Bar, PieChart as RPieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
@@ -101,6 +104,8 @@ const velocityData = [
 
 export default function InventoryAgent() {
   const [products, setProducts] = useState(initialProducts);
+  const [selectedOutletDrillDown, setSelectedOutletDrillDown] = useState(null);
+
 
   useEffect(() => {
     async function loadInventory() {
@@ -816,7 +821,22 @@ export default function InventoryAgent() {
           </div>
         )}
       </AnimatePresence>
+      {/* INVENTORY LOCATION MAP SECTION */}
+      <div className="pt-4">
+        <OutletLocationMap
+          onSelectOutlet={(outlet) => setSelectedOutletDrillDown(outlet)}
+        />
+      </div>
+
+      {/* OUTLET DRILL DOWN MODAL */}
+      {selectedOutletDrillDown && (
+        <OutletDrillDownModal
+          outlet={selectedOutletDrillDown}
+          onClose={() => setSelectedOutletDrillDown(null)}
+        />
+      )}
 
     </div>
   );
 }
+

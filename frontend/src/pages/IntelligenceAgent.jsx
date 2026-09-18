@@ -33,10 +33,13 @@ import {
   generateSmartAlerts,
   queryAiAssistant,
 } from "../api/apiClient";
+import OutletLocationMap from "../components/command/OutletLocationMap";
+import OutletDrillDownModal from "../components/command/OutletDrillDownModal";
 
 export default function IntelligenceAgent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedOutletDrillDown, setSelectedOutletDrillDown] = useState(null);
 
   const [intelligenceData, setIntelligenceData] = useState(null);
   const [selectedOutletProfile, setSelectedOutletProfile] = useState(null);
@@ -733,6 +736,21 @@ export default function IntelligenceAgent() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* REAL GEOGRAPHIC NETWORK MAP */}
+      <div className="pt-4">
+        <OutletLocationMap
+          onSelectOutlet={(outlet) => setSelectedOutletDrillDown(outlet)}
+        />
+      </div>
+
+      {/* OUTLET DRILL DOWN MODAL */}
+      {selectedOutletDrillDown && (
+        <OutletDrillDownModal
+          outlet={selectedOutletDrillDown}
+          onClose={() => setSelectedOutletDrillDown(null)}
+        />
       )}
     </div>
   );

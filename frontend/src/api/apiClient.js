@@ -272,5 +272,18 @@ export const getExecutiveDecisionCenterApi = (params = {}) => {
   return apiFetch(`/dashboard/executive-decision-center?${query.toString()}`);
 };
 
+export const updateUserProfileApi = (data) =>
+  apiFetch("/auth/profile", {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+
+export const changePasswordApi = (data) =>
+  apiFetch("/auth/change-password", {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+
+
 
 

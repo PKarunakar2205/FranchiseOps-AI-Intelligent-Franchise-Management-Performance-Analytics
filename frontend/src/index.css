@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
 
 @layer base {
   :root {
@@ -43,6 +44,33 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(99, 102, 241, 0.6);
+}
+
+/* Custom Leaflet Map Container & Tile Customizations */
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 1rem;
+  z-index: 10;
+  font-family: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+  border-radius: 1rem !important;
+  padding: 4px !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5) !important;
+  border: 1px solid rgba(51, 65, 85, 0.8) !important;
+}
+
+.leaflet-popup-tip {
+  background-color: #0f172a !important;
+}
+
+.leaflet-popup-content {
+  margin: 12px 14px !important;
+  line-height: 1.4 !important;
 }
 
 /* Custom Glassmorphism styles */
@@ -91,25 +119,6 @@
   background: rgba(30, 41, 59, 0.6);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-}
-
-.gradient-border {
-  position: relative;
-  border-radius: 0.75rem;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(236, 72, 153, 0.2));
-  padding: 1px;
-}
-
-.gradient-text {
-  background: linear-gradient(135deg, #4f46e5 0%, #9333ea 50%, #db2777 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.dark .gradient-text {
-  background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #f472b6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
 /* Glow effects */

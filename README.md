@@ -1,6 +1,4 @@
-Yes — keep the README **short, professional, and focused on the important parts**. Use this as your complete `README.md`:
 
-````markdown
 # 🚀 FranchiseOps AI
 
 ## Intelligent Franchise Management & Performance Analytics
@@ -332,20 +330,4 @@ Developed as part of an **Infosys Springboard internship/project experience** fo
 * Real-time event processing
 * Mobile application
 
----
 
-## 📜 License
-
-This project is intended for educational, internship, demonstration, and portfolio purposes.
-
----
-
-## 🔗 Repository
-
-**GitHub:**
-[https://github.com/PKarunakar2205/FranchiseOps-AI-Intelligent-Franchise-Management-Performance-Analytics](https://github.com/PKarunakar2205/FranchiseOps-AI-Intelligent-Franchise-Management-Performance-Analytics)
-
-```
-
-This version contains the **important project information without making the README unnecessarily long**.
-```

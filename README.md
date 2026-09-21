@@ -298,6 +298,18 @@ npm run preview
 ```
 
 ---
+## 📜 License
+
+This project is licensed under the **FranchiseOps AI Individual Project License**.
+
+Copyright © 2026 P Karunakar.
+
+The project is available for educational, academic, research, and personal
+learning purposes. Commercial use, redistribution, or presenting substantial
+parts of the project as another person's original work requires prior
+permission from the copyright holder.
+
+Third-party libraries and components remain subject to their respective licenses.
 
 ## 🎓 Project Context
 
